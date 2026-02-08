@@ -7,28 +7,51 @@ def get_client(token):
 
 def parse_registration_dates(reg_str):
     """
-    Parses a registration string like '2025.10.28 ~ 2025.11.10'
+    Parses a registration string like '2025.10.28 ~ 2025.11.10' or '2025년12월15일~2026년1월9일'
     Returns (start_date_str, end_date_str) in YYYY-MM-DD format.
     """
     if not reg_str:
         return None, None
         
     try:
+        # Standardize separator
+        reg_str = reg_str.replace('~', '~')
+        
         if '~' in reg_str:
             parts = reg_str.split('~')
             start_str = parts[0].strip()
             end_str = parts[1].strip()
             
-            # Convert 2025.10.28 -> 2025-10-28
-            try:
-                start_date = datetime.datetime.strptime(start_str, "%Y.%m.%d").date().isoformat()
-            except ValueError:
-                start_date = None
+            def parse_date(d_str):
+                d_str = d_str.strip()
+                # Try formatting: YYYY.MM.DD
+                try:
+                    return datetime.datetime.strptime(d_str, "%Y.%m.%d").date().isoformat()
+                except ValueError:
+                    pass
                 
-            try:
-                end_date = datetime.datetime.strptime(end_str, "%Y.%m.%d").date().isoformat()
-            except ValueError:
-                end_date = None
+                # Try formatting: YYYY년MM월DD일
+                try:
+                    # Remove trailing chars if needed, but strict matching is better
+                    # d_str might be "2025년12월15일"
+                    # Replace Korean chars with dots/dashes? Or use format string
+                    # strptime with %Y년%m월%d일 works only if locale is set or using platform specific support.
+                    # Safest: replace to dot format
+                    d_clean = d_str.replace("년", ".").replace("월", ".").replace("일", "")
+                    return datetime.datetime.strptime(d_clean, "%Y.%m.%d").date().isoformat()
+                except ValueError:
+                    pass
+                
+                # Try YYYY-MM-DD
+                try:
+                    return datetime.datetime.strptime(d_str, "%Y-%m-%d").date().isoformat()
+                except ValueError:
+                    pass
+                    
+                return None
+
+            start_date = parse_date(start_str)
+            end_date = parse_date(end_str)
                 
             return start_date, end_date
         else:
@@ -37,6 +60,28 @@ def parse_registration_dates(reg_str):
     except Exception as e:
         print(f"Error parsing dates from '{reg_str}': {e}")
         return None, None
+
+def determine_status(start_date, end_date):
+    """
+    Determines status based on current date vs registration period.
+    Returns: '접수중', '접수 마감', '접수 예정'
+    """
+    if not start_date or not end_date:
+        return None
+        
+    try:
+        now = datetime.date.today()
+        start = datetime.date.fromisoformat(start_date)
+        end = datetime.date.fromisoformat(end_date)
+        
+        if now < start:
+            return "접수 예정"
+        elif start <= now <= end:
+            return "접수중"
+        else:
+            return "접수 마감"
+    except:
+        return None
 
 def sync_event_to_notion(client, db_id, event):
     """
@@ -95,12 +140,17 @@ def sync_event_to_notion(client, db_id, event):
 
     # 2. Prepare Properties
     start_date, end_date = parse_registration_dates(event.get('registration_period', ''))
+    calculated_status = determine_status(start_date, end_date)
     
     # Corrected Property Mapping based on Schema Inspection
     properties = {
         "대회명": {"title": [{"text": {"content": event_name}}]},
         "AI자동생성여부": {"select": {"name": "Y"}}
     }
+    
+    # Update Status if calculated
+    if calculated_status:
+        properties["대회 상태"] = {"select": {"name": calculated_status}}
     
     # Handle optional fields separately to avoid null errors
     
