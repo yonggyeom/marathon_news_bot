@@ -50,10 +50,12 @@ jobs:
       - name: Run Marathon News Bot
         run: python main.py
       
-      - name: Upload output artifacts
+      - name: Upload Logs & Output
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: bot-output-${{ github.run_number }}
-          path: output/
+          name: bot-results-${{ github.run_number }}
+          path: |
+            output/
+            logs/
           retention-days: 7
