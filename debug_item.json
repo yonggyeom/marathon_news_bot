@@ -1,0 +1,432 @@
+{
+  "object": "data_source",
+  "id": "2e7cdde7-aca5-80c9-9637-000b39651149",
+  "cover": null,
+  "icon": {
+    "type": "emoji",
+    "emoji": "🏃‍♂️"
+  },
+  "created_time": "2026-01-13T07:17:00.000Z",
+  "created_by": {
+    "object": "user",
+    "id": "4c9cf4a0-9eb6-440a-b11d-6711160501c4"
+  },
+  "last_edited_by": {
+    "object": "user",
+    "id": "4c9cf4a0-9eb6-440a-b11d-6711160501c4"
+  },
+  "last_edited_time": "2026-02-08T03:32:00.000Z",
+  "title": [
+    {
+      "type": "text",
+      "text": {
+        "content": "[개인] 마라톤 대회 일정관리",
+        "link": null
+      },
+      "annotations": {
+        "bold": false,
+        "italic": false,
+        "strikethrough": false,
+        "underline": false,
+        "code": false,
+        "color": "default"
+      },
+      "plain_text": "[개인] 마라톤 대회 일정관리",
+      "href": null
+    }
+  ],
+  "description": [],
+  "is_inline": false,
+  "properties": {
+    "대회 상태": {
+      "id": "%3Ecf%60",
+      "name": "대회 상태",
+      "description": null,
+      "type": "status",
+      "status": {
+        "options": [
+          {
+            "id": "991b26ac-dd4d-4a28-9d33-a2c974c3c03f",
+            "name": "접수 예정",
+            "color": "default",
+            "description": null
+          },
+          {
+            "id": "Euc|",
+            "name": "접수 실패",
+            "color": "red",
+            "description": null
+          },
+          {
+            "id": "NrFr",
+            "name": "접수 종료",
+            "color": "yellow",
+            "description": null
+          },
+          {
+            "id": "bd92bc0c-044a-45a2-a675-b4a319556ca6",
+            "name": "접수 성공",
+            "color": "green",
+            "description": null
+          },
+          {
+            "id": "CUE[",
+            "name": "대회 종료",
+            "color": "brown",
+            "description": null
+          }
+        ],
+        "groups": [
+          {
+            "id": "3a195dc0-d234-4de2-97a2-34b09beef6f4",
+            "name": "To-do",
+            "color": "gray",
+            "option_ids": [
+              "991b26ac-dd4d-4a28-9d33-a2c974c3c03f"
+            ]
+          },
+          {
+            "id": "24d9f95b-f855-46ff-af07-13eb454d4b13",
+            "name": "In progress",
+            "color": "blue",
+            "option_ids": [
+              "Euc|",
+              "NrFr",
+              "bd92bc0c-044a-45a2-a675-b4a319556ca6"
+            ]
+          },
+          {
+            "id": "05430df0-fc27-4ee3-8f7c-5127047fd84c",
+            "name": "Complete",
+            "color": "green",
+            "option_ids": [
+              "CUE["
+            ]
+          }
+        ]
+      }
+    },
+    "대회날짜": {
+      "id": "HXRJ",
+      "name": "대회날짜",
+      "description": null,
+      "type": "date",
+      "date": {}
+    },
+    "접수 시작일": {
+      "id": "LKy%3E",
+      "name": "접수 시작일",
+      "description": null,
+      "type": "date",
+      "date": {}
+    },
+    "본인 접수여부": {
+      "id": "ZIE%5D",
+      "name": "본인 접수여부",
+      "description": null,
+      "type": "select",
+      "select": {
+        "options": [
+          {
+            "id": "c6a59895-d2e8-4dd4-bd3e-c47d188537ab",
+            "name": "Y",
+            "color": "gray",
+            "description": null
+          },
+          {
+            "id": "59608381-8c9b-4cbb-8b6b-1ba99f5a7c80",
+            "name": "N",
+            "color": "default",
+            "description": null
+          }
+        ]
+      }
+    },
+    "완주 기록": {
+      "id": "%5BA%3BQ",
+      "name": "완주 기록",
+      "description": null,
+      "type": "rich_text",
+      "rich_text": {}
+    },
+    "(예상) 접수 시기": {
+      "id": "%5CgJq",
+      "name": "(예상) 접수 시기",
+      "description": null,
+      "type": "rich_text",
+      "rich_text": {}
+    },
+    "유튜브 업로드 여부": {
+      "id": "%5EI%3Dw",
+      "name": "유튜브 업로드 여부",
+      "description": null,
+      "type": "checkbox",
+      "checkbox": {}
+    },
+    "추가 접수일자": {
+      "id": "cbky",
+      "name": "추가 접수일자",
+      "description": null,
+      "type": "date",
+      "date": {}
+    },
+    "코스 유형": {
+      "id": "d%5DBy",
+      "name": "코스 유형",
+      "description": null,
+      "type": "multi_select",
+      "multi_select": {
+        "options": [
+          {
+            "id": "4c8acbca-adf5-47a2-92c4-6050c091ff29",
+            "name": "5km",
+            "color": "red",
+            "description": null
+          },
+          {
+            "id": "f8e37b68-feb7-4717-8102-e0415fa4a43c",
+            "name": "5.3km",
+            "color": "green",
+            "description": null
+          },
+          {
+            "id": "6043d2e3-49d8-4688-bc19-513d7dc910de",
+            "name": "10km",
+            "color": "brown",
+            "description": null
+          },
+          {
+            "id": "b5b2c385-207c-483b-902a-4cad4ed04a89",
+            "name": "10.9km",
+            "color": "pink",
+            "description": null
+          },
+          {
+            "id": "c7bf05a9-294d-47ce-9691-21dd6add0835",
+            "name": "하프",
+            "color": "purple",
+            "description": null
+          },
+          {
+            "id": "33f2f69b-5285-4177-8369-1eaffb24fc83",
+            "name": "풀",
+            "color": "yellow",
+            "description": null
+          },
+          {
+            "id": "917f6f37-bb95-4145-886d-f5ef88539e0e",
+            "name": "3km",
+            "color": "orange",
+            "description": null
+          }
+        ]
+      }
+    },
+    "블로그 업로드 여부": {
+      "id": "e%3F%7Cz",
+      "name": "블로그 업로드 여부",
+      "description": null,
+      "type": "checkbox",
+      "checkbox": {}
+    },
+    "홈페이지": {
+      "id": "eN%7Bj",
+      "name": "홈페이지",
+      "description": null,
+      "type": "url",
+      "url": {}
+    },
+    "D-Day": {
+      "id": "fvkL",
+      "name": "D-Day",
+      "description": null,
+      "type": "formula",
+      "formula": {
+        "expression": "dateBetween({{notion:block_property:HXRJ:2e7cdde7-aca5-80c9-9637-000b39651149:6a8eb5d1-74b8-4c70-9813-98edf1ae981f}}, now(), \"days\")"
+      }
+    },
+    "결제 일자": {
+      "id": "oHGD",
+      "name": "결제 일자",
+      "description": null,
+      "type": "date",
+      "date": {}
+    },
+    "참가 코스": {
+      "id": "svWv",
+      "name": "참가 코스",
+      "description": null,
+      "type": "select",
+      "select": {
+        "options": [
+          {
+            "id": "ef58fec0-59cf-4ce7-85b6-663e7f7ecaa4",
+            "name": "풀",
+            "color": "default",
+            "description": null
+          },
+          {
+            "id": "d44d86c1-5a0b-4373-ab63-1daebefcb8ce",
+            "name": "10km",
+            "color": "brown",
+            "description": null
+          },
+          {
+            "id": "c9c46884-1ffb-49d2-9141-b5bf2b181609",
+            "name": "하프",
+            "color": "orange",
+            "description": null
+          },
+          {
+            "id": "53307093-8f98-4400-80a5-4df952080274",
+            "name": "5km",
+            "color": "blue",
+            "description": null
+          }
+        ]
+      }
+    },
+    "기록제출 일자": {
+      "id": "vUxe",
+      "name": "기록제출 일자",
+      "description": null,
+      "type": "date",
+      "date": {}
+    },
+    "장소": {
+      "id": "wOzV",
+      "name": "장소",
+      "description": null,
+      "type": "select",
+      "select": {
+        "options": [
+          {
+            "id": "9e2fa87a-bc34-4be5-b37a-674db99907f7",
+            "name": "서울",
+            "color": "purple",
+            "description": null
+          },
+          {
+            "id": "57033a30-b977-4f8f-b21a-302a54abff6a",
+            "name": "인천",
+            "color": "blue",
+            "description": null
+          },
+          {
+            "id": "3aceba02-7891-4c48-81bc-01efdf66a9a0",
+            "name": "대구",
+            "color": "green",
+            "description": null
+          },
+          {
+            "id": "e69dcad4-f3e9-44e7-ab0d-a60e8fd04bfc",
+            "name": "고양",
+            "color": "yellow",
+            "description": null
+          },
+          {
+            "id": "b1278d90-7dd2-458c-a259-ece02fab3d77",
+            "name": "춘천",
+            "color": "pink",
+            "description": null
+          },
+          {
+            "id": "38450bcf-2601-4d17-a05c-a59439df25ff",
+            "name": "경주",
+            "color": "default",
+            "description": null
+          },
+          {
+            "id": "d813b9d3-12ba-4975-94e6-b22fea1a049e",
+            "name": "제주",
+            "color": "red",
+            "description": null
+          },
+          {
+            "id": "b9210b62-1929-4f99-b89f-60e1befbd3b6",
+            "name": "합천",
+            "color": "brown",
+            "description": null
+          },
+          {
+            "id": "bee755ea-a002-4a78-af67-97ce06ed5909",
+            "name": "군산",
+            "color": "orange",
+            "description": null
+          },
+          {
+            "id": "936b780f-e5cd-481c-a629-6130f4789987",
+            "name": "부산",
+            "color": "gray",
+            "description": null
+          },
+          {
+            "id": "2114592f-b3e2-450e-b69d-11f7ee09dc7b",
+            "name": "홍성",
+            "color": "red",
+            "description": null
+          },
+          {
+            "id": "dbc81e11-d6f3-4387-9974-71b6852988b3",
+            "name": "하남",
+            "color": "green",
+            "description": null
+          },
+          {
+            "id": "52c68347-6d41-4898-a711-a637b1419b74",
+            "name": "과천",
+            "color": "green",
+            "description": null
+          },
+          {
+            "id": "92b95b4e-2fba-4d65-9864-2c27fbdb077a",
+            "name": "청주",
+            "color": "yellow",
+            "description": null
+          },
+          {
+            "id": "335547f3-b6a6-4dc7-a5c1-0281bb55386b",
+            "name": "울진",
+            "color": "red",
+            "description": null
+          }
+        ]
+      }
+    },
+    "코스별 참가비": {
+      "id": "wvvW",
+      "name": "코스별 참가비",
+      "description": null,
+      "type": "rich_text",
+      "rich_text": {}
+    },
+    "내 참가비": {
+      "id": "%7DLV%3B",
+      "name": "내 참가비",
+      "description": null,
+      "type": "number",
+      "number": {
+        "format": "won"
+      }
+    },
+    "대회명": {
+      "id": "title",
+      "name": "대회명",
+      "description": null,
+      "type": "title",
+      "title": {}
+    }
+  },
+  "parent": {
+    "type": "database_id",
+    "database_id": "2e7cdde7-aca5-80f8-84e6-c298cbabf649"
+  },
+  "database_parent": {
+    "type": "block_id",
+    "block_id": "2dfcdde7-aca5-80df-8967-c890357c6653"
+  },
+  "url": "https://www.notion.so/2e7cdde7aca580f884e6c298cbabf649",
+  "public_url": null,
+  "archived": false,
+  "in_trash": false
+}
