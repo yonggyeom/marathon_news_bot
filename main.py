@@ -131,7 +131,20 @@ def main():
         print("Notion credentials not found. Skipping sync.")
         sync_results.append({'status': 'skipped', 'name': 'ALL', 'message': 'Notion credentials missing'})
 
-    # 5. Logging
+    # 5. Save Enriched Data (CRITICAL for future updates)
+    # We must update stored_events with the enriched details so we can detect changes later.
+    if enriched_events:
+        print("Saving enriched data to local database...")
+        all_stored = load_stored_events()
+        for event in enriched_events:
+            key = f"{event['date']}_{event['name']}"
+            if key in all_stored:
+                all_stored[key].update(event)
+            else:
+                all_stored[key] = event
+        save_events(all_stored)
+
+    # 6. Logging
     log_execution_report(sync_results, len(target_events) > 0)
 
 def log_execution_report(sync_results, new_events_found=True, no_source_events=False):

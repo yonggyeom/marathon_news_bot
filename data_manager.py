@@ -48,41 +48,40 @@ def detect_changes(scraped_events):
             changed = False
             changes = []
             
-            # Check Location
-            if event.get('location') and event['location'] != stored.get('location'):
-                changed = True
-                changes.append(f"Location: {stored.get('location')} -> {event['location']}")
+            # Fields to monitor for changes
+            # Note: We compare only if the new scrape *provides* the data.
+            # If new scrape is missing data (e.g. sparse list), we assume old rich data is still valid,
+            # UNLESS it's a field that should be in the list (location, date, etc).
             
-            # Check Link (RoadRun)
-            if event.get('link') and event['link'] != stored.get('link'):
-                changed = True
-                changes.append(f"Link: {stored.get('link')} -> {event['link']}")
-
-            # Check Registration Status (RunningLife)
-            if event.get('registration_status') and event['registration_status'] != stored.get('registration_status'):
-                changed = True
-                changes.append(f"Status: {stored.get('registration_status')} -> {event['registration_status']}")
-                
+            common_fields = {
+                'location': 'Location',
+                'link': 'Link',
+                'registration_status': 'Status',
+                'organizer': 'Organizer',
+                'date': 'Date'
+            }
+            
+            for field, label in common_fields.items():
+                if field in event and event[field]:
+                    # Normalize comparison (strip whitespace)
+                    val_new = str(event[field]).strip()
+                    val_old = str(stored.get(field, '')).strip()
+                    
+                    if val_new != val_old:
+                        changed = True
+                        changes.append(f"{label}: {val_old} -> {val_new}")
+            
             if changed:
                 event['data_status'] = 'updated'
                 event['change_log'] = ", ".join(changes)
-                # Preserve some old data if needed? No, we want to update.
-                # But we might want to keep some flags if we had them.
-                # For now, simplistic update is fine.
                 updated_events.append(event)
 
     # Update stored events
-    # We purposefully overwrite with the latest scrape to keep it current.
-    # Note: If we have enriched data (like full description) in stored_events that is NOT in scraped_events,
-    # simply doing stored_events.update(scraped_events_map) might overwrite rich data with sparse data.
-    # We should merge carefully.
+    # We update stored with new values.
+    # CRITICAL: We must preserve existing keys in stored_events that are NOT in scraped_events (like 'category', 'description' from detail fetch)
     
     for key, event in scraped_events_map.items():
         if key in stored_events:
-            # Merge: update stored with new values, but keep existing keys if not present in new
-            # Actually, scraped_events (from list) is usually sparse.
-            # stored_events might have 'description', 'organizer' from previous detail fetch.
-            # We DONT want to lose that.
             stored_events[key].update(event)
         else:
             stored_events[key] = event

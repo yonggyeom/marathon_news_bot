@@ -83,6 +83,7 @@ def fetch_marathon_schedule():
             name_element = cols[1].find('a')
             name_text = cols[1].get_text(strip=True)
             location_text = cols[2].get_text(strip=True)
+            organizer_text = cols[3].get_text(strip=True)
             
             if not date_raw or "날짜" in date_raw:
                 continue
@@ -108,6 +109,7 @@ def fetch_marathon_schedule():
                     "date_raw": date_raw, # Keep raw for debugging
                     "name": name_text,
                     "location": location_text,
+                    "organizer": organizer_text,
                     "link": link,
                     "scraped_at": datetime.datetime.now().isoformat()
                 })
