@@ -22,11 +22,12 @@ def detect_changes(scraped_events):
     Compares scraped events with stored events.
     Returns:
         new_events: list of events that are completely new
-        updated_events: list of events that existed but changed details (optional logic)
+        updated_events: list of events that existed but changed details (location, status, link)
     """
     stored_events = load_stored_events()
     
     new_events = []
+    updated_events = []
     
     # We use (Date + Name) as a unique key for simplicity
     # Ideally, we'd have a unique ID from the site, but text scraping is brittle.
@@ -39,21 +40,56 @@ def detect_changes(scraped_events):
         scraped_events_map[key] = event
         
         if key not in stored_events:
+            event['data_status'] = 'new'
             new_events.append(event)
+        else:
+            # Check for changes in existing event
+            stored = stored_events[key]
+            changed = False
+            changes = []
+            
+            # Check Location
+            if event.get('location') and event['location'] != stored.get('location'):
+                changed = True
+                changes.append(f"Location: {stored.get('location')} -> {event['location']}")
+            
+            # Check Link (RoadRun)
+            if event.get('link') and event['link'] != stored.get('link'):
+                changed = True
+                changes.append(f"Link: {stored.get('link')} -> {event['link']}")
+
+            # Check Registration Status (RunningLife)
+            if event.get('registration_status') and event['registration_status'] != stored.get('registration_status'):
+                changed = True
+                changes.append(f"Status: {stored.get('registration_status')} -> {event['registration_status']}")
+                
+            if changed:
+                event['data_status'] = 'updated'
+                event['change_log'] = ", ".join(changes)
+                # Preserve some old data if needed? No, we want to update.
+                # But we might want to keep some flags if we had them.
+                # For now, simplistic update is fine.
+                updated_events.append(event)
+
+    # Update stored events
+    # We purposefully overwrite with the latest scrape to keep it current.
+    # Note: If we have enriched data (like full description) in stored_events that is NOT in scraped_events,
+    # simply doing stored_events.update(scraped_events_map) might overwrite rich data with sparse data.
+    # We should merge carefully.
     
-    # We update the stored events with the current state
-    # This acts as a sync. If an event is removed from the site, we keep it or remove it?
-    # For now, let's strictly add new stuff. We assume we want to track *history* too perhaps?
-    # But to keep it simple, we just save the current snapshot as the new state, 
-    # BUT we want to preserve old events if we want.
-    # Actually, simplistic approach: overwrite stored_events with current scrape? 
-    # No, then we lose history of what we've "seen" if the site rotates them out.
-    # Better: Update stored_events with new keys.
-    
-    stored_events.update(scraped_events_map)
+    for key, event in scraped_events_map.items():
+        if key in stored_events:
+            # Merge: update stored with new values, but keep existing keys if not present in new
+            # Actually, scraped_events (from list) is usually sparse.
+            # stored_events might have 'description', 'organizer' from previous detail fetch.
+            # We DONT want to lose that.
+            stored_events[key].update(event)
+        else:
+            stored_events[key] = event
+            
     save_events(stored_events)
     
-    return new_events
+    return new_events, updated_events
 
 if __name__ == "__main__":
     # Test logic

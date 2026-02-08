@@ -13,7 +13,8 @@ def generate_script(new_events):
     # Prepare data string
     events_text = ""
     for event in new_events:
-        events_text += f"--- Event ---\n"
+        status = event.get('data_status', 'new').upper()
+        events_text += f"--- Event ({status}) ---\n"
         events_text += f"Title: {event.get('name', 'N/A')}\n"
         events_text += f"Date: {event.get('date_time', event.get('date', 'N/A'))}\n"
         events_text += f"Location: {event.get('location', 'N/A')}\n"
@@ -22,6 +23,7 @@ def generate_script(new_events):
         if 'organizer' in event: events_text += f"Organizer: {event['organizer']}\n"
         if 'registration_period' in event: events_text += f"Registration: {event['registration_period']}\n"
         if 'website' in event: events_text += f"Website: {event['website']}\n"
+        if 'change_log' in event: events_text += f"Changes: {event['change_log']}\n"
         if 'description' in event: 
             # Truncate description to avoid token limit if very long
             desc = event['description'][:500] + "..." if len(event['description']) > 500 else event['description']
@@ -33,13 +35,14 @@ def generate_script(new_events):
             client = OpenAI(api_key=api_key)
             prompt = f"""
             You are an energetic marathon news reporter. 
-            Write a detailed and exciting YouTube script announcing the following new marathon events in Korea.
+            Write a detailed and exciting YouTube script announcing the following marathon event news in Korea.
             
             For each event, cover:
             1. The Race Name and Schedule.
             2. The Location and Race Categories (10k, Full, etc).
             3. Detailed information from the 'Details' section (highlight unique selling points, prizes, or course features).
             4. Registration information (when to register).
+            5. IF the event is marked as (UPDATED), explicitly mention what has changed (refer to 'Changes' field) and alert the viewers to check the new information.
             
             Use an enthusiastic tone. Structure it clearly.
             

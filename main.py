@@ -42,46 +42,58 @@ def main():
     # 2. Detect Changes
     stored_events = load_stored_events()
     new_events = []
+    updated_events = []
     
     if not stored_events:
         print("First run detected. Initializing database with current events...")
-        new_events = detect_changes(latest_events)
+        new_events, _ = detect_changes(latest_events) # Ignore updates on first run
         
         if len(new_events) > 10:
              print(f"First run: {len(new_events)} events found. Marking as read to avoid spam.")
              new_events = [] 
     else:
-        new_events = detect_changes(latest_events)
+        new_events, updated_events = detect_changes(latest_events)
 
-    if not new_events:
+    if not new_events and not updated_events:
         print("No new events relative to stored data.")
         log_execution_report([], new_events_found=False)
         return
 
-    print(f"Found {len(new_events)} new/updated events.")
+    print(f"Found {len(new_events)} new events and {len(updated_events)} updated events.")
 
-    # 3. Fetch Details for New Events
-    print("Fetching detailed info for new events...")
+    # 3. Fetch Details for New/Updated Events
+    print("Fetching detailed info for target events...")
     enriched_events = []
     
-    # Sort first to handle prioritizing? 
-    # Just take top 5
-    target_events = new_events[:5] 
+    # Prioritize new events, then updated. Limit total processing to 10 to be safe.
+    # Note: Updated events might confirm "No Change" if we re-fetch details and they match?
+    # Actually, we already detected change in list info. We fetch details to get the rest.
+    
+    target_events = (new_events + updated_events)[:10]
     
     for event in target_events:
-        print(f"  - Fetching details for: {event['name']}")
-        details = fetch_event_details(event['link'])
-        # Merge details into event
-        # Only overwrite if detail is not empty
-        for k, v in details.items():
-            if v:
-                event[k] = v
+        status_label = event.get('data_status', 'new').upper()
+        print(f"  - [{status_label}] Fetching details for: {event['name']}")
+        
+        # Only fetch details if we have a link
+        if event.get('link'):
+             details = fetch_event_details(event['link'])
+             # Merge details into event
+             # Only overwrite if detail is not empty
+             for k, v in details.items():
+                 if v:
+                     event[k] = v
         
         enriched_events.append(event)
         time.sleep(1) # Be nice to the server
 
     # 3. Generate Script
     print("Generating script...")
+    
+    # Pass enriched events to script generator
+    # We might want to indicate which are NEW and which are UPDATED in the script?
+    # script_generator.py might need update if we want that distinction visible.
+    # For now, just pass them all.
     
     script = generate_script(enriched_events)
 
@@ -106,7 +118,7 @@ def main():
     sync_results = []
     
     if notion_key and notion_db:
-        print("Syncing new events to Notion...")
+        print("Syncing events to Notion...")
         n_client = get_client(notion_key)
         for event in enriched_events:
             result = sync_event_to_notion(n_client, notion_db, event)
@@ -120,7 +132,7 @@ def main():
         sync_results.append({'status': 'skipped', 'name': 'ALL', 'message': 'Notion credentials missing'})
 
     # 5. Logging
-    log_execution_report(sync_results, len(new_events) > 0)
+    log_execution_report(sync_results, len(target_events) > 0)
 
 def log_execution_report(sync_results, new_events_found=True, no_source_events=False):
     log_dir = "logs"
@@ -152,6 +164,8 @@ def log_execution_report(sync_results, new_events_found=True, no_source_events=F
         # Detailed Logs
         for res in sync_results:
             f.write(f"[{res['status'].upper()}] {res['name']}: {res['message']}\n")
+            if res.get('details'):
+                 f.write(f"    -> Changes: {res['details']}\n")
             
         f.write(f"{'='*30}\n")
 

@@ -3,6 +3,46 @@ from bs4 import BeautifulSoup
 import datetime
 import re
 
+def normalize_date(date_text):
+    """
+    Normalizes date string to YYYY-MM-DD.
+    Handles 'M/D(day)' or 'YYYY-MM-DD' or 'MM/DD'.
+    Assumes current year if year is missing, or infers from context if needed.
+    """
+    if not date_text:
+        return ""
+    
+    # Simple YYYY-MM-DD check
+    if re.match(r'^\d{4}-\d{2}-\d{2}$', date_text):
+        return date_text
+        
+    current_year = datetime.datetime.now().year
+    
+    # Handle "2/8(일)" or "02/08"
+    # Remove parens and day of week
+    text = re.sub(r'\(.*?\)', '', date_text).strip()
+    
+    match = re.match(r'(\d{1,2})[-/.](\d{1,2})', text)
+    if match:
+        month, day = map(int, match.groups())
+        # Infer year: if month is earlier than current month by a lot, maybe next year? 
+        # But usually schedules are for current/future.
+        # Let's assume current year for now, or check if it's in the past?
+        # Marathon schedule is usually for coming year.
+        # If we are in Dec and see Jan, it's next year.
+        # If we are in Jan and see Dec, it's this year (or last?).
+        now = datetime.datetime.now()
+        year = now.year
+        
+        # Heuristic: if month < now.month - 2, it's probably next year? 
+        # (e.g. In Nov, see Jan race -> Next year)
+        if month < now.month - 3: 
+             year += 1
+        
+        return f"{year}-{month:02d}-{day:02d}"
+        
+    return date_text
+
 def fetch_marathon_schedule():
     """
     Fetches the marathon schedule from marathon.pe.kr
@@ -11,13 +51,13 @@ def fetch_marathon_schedule():
     url = "http://www.roadrun.co.kr/schedule/list.php"
     try:
         response = requests.get(url, timeout=10)
-        response.encoding = 'euc-kr'  # Likely EUC-KR for this old PHP site 
+        response.encoding = 'euc-kr' 
         
         soup = BeautifulSoup(response.text, 'html.parser')
         
         events = []
         
-        # Finding the main table - often it's the one with many rows
+        # Finding the main table
         tables = soup.find_all('table')
         
         target_table = None
@@ -28,39 +68,31 @@ def fetch_marathon_schedule():
                 break
         
         if not target_table:
-            # Fallback: look for a table with many rows
             rows = soup.find_all('tr')
         else:
             rows = target_table.find_all('tr')
 
 
-        current_year = datetime.datetime.now().year
-
         for row in rows:
-            # Use recursive=False to get only the cells of THIS row, not nested tables
             cols = row.find_all('td', recursive=False)
             
-            # The site seems to have rows with exactly 4 columns for events
             if len(cols) != 4:
                 continue
             
-            # Simple heuristic extraction
-            # 0: Date, 1: Name/Link, 2: Location, 3: Host
-            
-            date_text = cols[0].get_text(strip=True)
+            date_raw = cols[0].get_text(strip=True)
             name_element = cols[1].find('a')
             name_text = cols[1].get_text(strip=True)
             location_text = cols[2].get_text(strip=True)
             
-            # Skip header rows
-            if not date_text or "날짜" in date_text:
+            if not date_raw or "날짜" in date_raw:
                 continue
+
+            # Normalize Date
+            date_text = normalize_date(date_raw)
 
             link = ""
             if name_element and 'href' in name_element.attrs:
                 raw_href = name_element['href']
-                # Link is often javascript:open_window('win', 'view.php?no=41311', ...)
-                # keys: view.php?no=XXXXX
                 if 'view.php' in raw_href:
                     match = re.search(r"view\.php\?no=\d+", raw_href)
                     if match:
@@ -68,14 +100,15 @@ def fetch_marathon_schedule():
                 elif not raw_href.startswith('http') and not raw_href.startswith('javascript'):
                      link = f"http://www.roadrun.co.kr/schedule/{raw_href}"
                 else:
-                    link = raw_href # Fallback
+                    link = raw_href 
 
             if name_text:
                  events.append({
                     "date": date_text,
+                    "date_raw": date_raw, # Keep raw for debugging
                     "name": name_text,
                     "location": location_text,
-                    "link": link, # Host info at cols[3] if needed
+                    "link": link,
                     "scraped_at": datetime.datetime.now().isoformat()
                 })
                 

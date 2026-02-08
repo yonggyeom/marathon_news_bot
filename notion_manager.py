@@ -141,10 +141,15 @@ def sync_event_to_notion(client, db_id, event):
 
     # 3. Create or Update
     try:
+        msg = 'Updated existing page'
+        changes = event.get('change_log')
+        if changes:
+             msg += f" ({changes})"
+
         if existing_page_id:
             client.pages.update(page_id=existing_page_id, properties=properties)
             print(f"Updated Notion: {event_name}")
-            return {'status': 'updated', 'name': event_name, 'message': 'Updated existing page'}
+            return {'status': 'updated', 'name': event_name, 'message': msg, 'details': changes}
         else:
             client.pages.create(parent={"database_id": db_id}, properties=properties)
             print(f"Created Notion: {event_name} (New)")
