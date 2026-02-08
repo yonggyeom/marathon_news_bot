@@ -50,6 +50,19 @@ jobs:
       - name: Run Marathon News Bot
         run: python main.py
       
+      - name: Display Log in Summary
+        if: always()
+        run: |
+          if [ -d "logs" ] && ls logs/daily_log_*.txt 1> /dev/null 2>&1; then
+            echo "## 📜 Execution Log" >> $GITHUB_STEP_SUMMARY
+            echo '```text' >> $GITHUB_STEP_SUMMARY
+            cat logs/daily_log_*.txt >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## ⚠️ No Log File Found" >> $GITHUB_STEP_SUMMARY
+            echo "The bot might have failed before creating a log file." >> $GITHUB_STEP_SUMMARY
+          fi
+
       - name: Upload Logs & Output
         if: always()
         uses: actions/upload-artifact@v4
