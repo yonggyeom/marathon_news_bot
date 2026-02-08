@@ -44,7 +44,7 @@ def sync_event_to_notion(client, db_id, event):
     """
     event_name = event.get('name')
     if not event_name:
-        return
+        return {'status': 'skipped', 'name': 'Unknown', 'message': 'No event name'}
 
     # 1. Check if event exists (USING SEARCH FILTER)
     existing_page_id = None
@@ -87,7 +87,7 @@ def sync_event_to_notion(client, db_id, event):
                     select_prop = existing_props['AI자동생성여부'].get('select')
                     if select_prop and select_prop.get('name') != 'Y':
                         print(f"Skipping {event_name}: AI Update Locked.")
-                        return
+                        return {'status': 'skipped', 'name': event_name, 'message': 'AI Update Locked'}
 
     except Exception as e:
         print(f"Error in search/sync for {event_name}: {e}")
@@ -144,9 +144,12 @@ def sync_event_to_notion(client, db_id, event):
         if existing_page_id:
             client.pages.update(page_id=existing_page_id, properties=properties)
             print(f"Updated Notion: {event_name}")
+            return {'status': 'updated', 'name': event_name, 'message': 'Updated existing page'}
         else:
             client.pages.create(parent={"database_id": db_id}, properties=properties)
             print(f"Created Notion: {event_name} (New)")
+            return {'status': 'created', 'name': event_name, 'message': 'Created new page'}
             
     except Exception as e:
         print(f"Failed to sync {event_name}: {e}")
+        return {'status': 'error', 'name': event_name, 'message': str(e)}

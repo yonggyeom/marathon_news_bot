@@ -24,6 +24,7 @@ def main():
     
     if not roadrun_events and not runninglife_events:
         print("No events found from any source.")
+        log_execution_report([], new_events_found=False, no_source_events=True)
         return
 
     print(f"Roadrun: {len(roadrun_events)} events | RunningLife: {len(runninglife_events)} events")
@@ -54,6 +55,7 @@ def main():
 
     if not new_events:
         print("No new events relative to stored data.")
+        log_execution_report([], new_events_found=False)
         return
 
     print(f"Found {len(new_events)} new/updated events.")
@@ -101,13 +103,65 @@ def main():
     notion_key = os.getenv("NOTION_API_KEY")
     notion_db = os.getenv("NOTION_DATABASE_ID")
     
+    sync_results = []
+    
     if notion_key and notion_db:
         print("Syncing new events to Notion...")
         n_client = get_client(notion_key)
         for event in enriched_events:
-            sync_event_to_notion(n_client, notion_db, event)
+            result = sync_event_to_notion(n_client, notion_db, event)
+            if result:
+                sync_results.append(result)
+            else:
+                 # Fallback if function returns None (unexpected)
+                sync_results.append({'status': 'unknown', 'name': event.get('name', 'Unknown'), 'message': 'No result returned'})
     else:
         print("Notion credentials not found. Skipping sync.")
+        sync_results.append({'status': 'skipped', 'name': 'ALL', 'message': 'Notion credentials missing'})
+
+    # 5. Logging
+    log_execution_report(sync_results, len(new_events) > 0)
+
+def log_execution_report(sync_results, new_events_found=True, no_source_events=False):
+    log_dir = "logs"
+    os.makedirs(log_dir, exist_ok=True)
+    today_str = datetime.datetime.now().strftime("%Y-%m-%d")
+    log_file = os.path.join(log_dir, f"daily_log_{today_str}.txt")
+    
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    with open(log_file, "a", encoding="utf-8") as f:
+        f.write(f"\n[{timestamp}] Execution Report\n")
+        f.write(f"{'='*30}\n")
+        
+        # Summary Stats
+        total_synced = len([r for r in sync_results if r['status'] in ['created', 'updated']])
+        total_errors = len([r for r in sync_results if r['status'] == 'error'])
+        total_skipped = len([r for r in sync_results if r['status'] == 'skipped'])
+        
+        summary = f"Synced: {total_synced}, Errors: {total_errors}, Skipped: {total_skipped}"
+        f.write(f"Summary: {summary}\n")
+        
+        if no_source_events:
+             f.write("Status: No events found from any source (Scraping failed or empty).\n")
+        elif not new_events_found:
+             f.write("Status: No new events found to sync.\n")
+        
+        f.write(f"{'-'*30}\n")
+        
+        # Detailed Logs
+        for res in sync_results:
+            f.write(f"[{res['status'].upper()}] {res['name']}: {res['message']}\n")
+            
+        f.write(f"{'='*30}\n")
+
+    print(f"\nLog saved to: {log_file}")
+    if no_source_events:
+        print("Result: No source events found.")
+    elif not new_events_found:
+        print("Result: No new events to sync.")
+    else:
+        print(f"Sync Result: {summary}")
 
 if __name__ == "__main__":
     main()
