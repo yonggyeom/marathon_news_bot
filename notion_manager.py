@@ -77,9 +77,9 @@ def determine_status(start_date, end_date):
         if now < start:
             return "접수 예정"
         elif start <= now <= end:
-            return "접수중"
+            return "접수 진행중"
         else:
-            return "접수 마감"
+            return "접수 종료"
     except:
         return None
 
